@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Universitario - Supabase</title>
+    <title>Horizonte Viajes - Agencia de Viajes | Supabase</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client CDN -->
@@ -21,20 +21,62 @@
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                         mono: ['"Fira Code"', 'monospace'],
+                    },
+                    boxShadow: {
+                        glow: '0 0 45px -14px rgba(34, 211, 238, 0.5)',
                     }
                 }
             }
         }
     </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
-        ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 999px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 1); }
+
+        body {
+            background-image:
+                radial-gradient(ellipse at top right, rgba(6, 182, 212, 0.10), transparent 55%),
+                radial-gradient(ellipse at bottom left, rgba(245, 158, 11, 0.07), transparent 50%);
+            background-attachment: fixed;
+        }
+
         .glass-card {
-            background: rgba(30, 41, 59, 0.65);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(30, 41, 59, 0.55);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        select option {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        input[type="date"] { color-scheme: dark; }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(14px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-panel { animation: modalIn .18s ease-out; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px) scale(.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .toast-item { animation: toastIn .2s ease-out; }
+        .toast-out { opacity: 0; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        @media (max-width: 639px) {
+            #state-filter { display: none !important; }
         }
     </style>
 </head>
@@ -42,14 +84,17 @@
 <body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col md:flex-row overflow-hidden">
 
     <!-- MOBILE HEADER -->
-    <header class="md:hidden bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between z-30 shrink-0">
+    <header class="md:hidden bg-slate-900/90 border-b border-slate-800 p-4 flex items-center justify-between z-30 shrink-0">
         <div class="flex items-center space-x-3">
-            <div class="p-2 bg-indigo-600 rounded-xl text-white">
-                <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+            <div class="p-2 bg-gradient-to-tr from-sky-500 to-cyan-400 rounded-xl text-slate-950 shadow-lg shadow-cyan-500/25">
+                <i data-lucide="plane" class="w-6 h-6"></i>
             </div>
-            <span class="font-bold text-lg text-white tracking-wide">UNDC</span>
+            <div>
+                <span class="font-bold text-lg text-white tracking-wide block leading-tight">Horizonte</span>
+                <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-semibold">Agencia de viajes</span>
+            </div>
         </div>
-        <button id="mobile-menu-btn" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">
+        <button id="mobile-menu-btn" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition">
             <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
     </header>
@@ -58,51 +103,52 @@
     <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 z-40 w-64 bg-slate-900/95 md:bg-slate-900/60 backdrop-blur-xl border-r border-slate-800/80 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0">
         <!-- Logo Header -->
         <div class="p-6 hidden md:flex items-center space-x-3 border-b border-slate-800/80">
-            <div class="p-2.5 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-xl text-white shadow-lg shadow-indigo-500/25">
-                <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+            <div class="p-2.5 bg-gradient-to-tr from-sky-500 to-cyan-400 rounded-xl text-slate-950 shadow-lg shadow-cyan-500/25">
+                <i data-lucide="plane" class="w-6 h-6"></i>
             </div>
             <div>
-                <h1 class="font-bold text-lg text-white leading-tight">UNDC Supabase</h1>
-                <p class="text-xs text-indigo-400 font-medium">Gestión Académica BD</p>
+                <h1 class="font-bold text-lg text-white leading-tight">Horizonte</h1>
+                <p class="text-xs text-cyan-400 font-medium">Agencia de Viajes</p>
             </div>
         </div>
 
         <!-- Navigation Links -->
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Tablas del Diagrama</div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Panel general</div>
 
-            <button onclick="switchTab('carrera')" id="nav-carrera" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
-                <i data-lucide="award" class="w-5 h-5"></i>
-                <span>CARRERA</span>
-                <span id="badge-carrera" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+            <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Inicio</span>
             </button>
 
-            <button onclick="switchTab('docente')" id="nav-docente" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
-                <i data-lucide="user-check" class="w-5 h-5"></i>
-                <span>DOCENTE</span>
-                <span id="badge-docente" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
-            </button>
+            <div class="pt-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Tablas del Diagrama</div>
 
-            <button onclick="switchTab('alumno')" id="nav-alumno" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
+            <button onclick="switchTab('cliente')" id="nav-cliente" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
                 <i data-lucide="users" class="w-5 h-5"></i>
-                <span>ALUMNO</span>
-                <span id="badge-alumno" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+                <span>CLIENTE</span>
+                <span id="badge-cliente" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
             </button>
 
-            <button onclick="switchTab('curso')" id="nav-curso" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
-                <i data-lucide="book-open" class="w-5 h-5"></i>
-                <span>CURSO</span>
-                <span id="badge-curso" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+            <button onclick="switchTab('destino')" id="nav-destino" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
+                <i data-lucide="map-pin" class="w-5 h-5"></i>
+                <span>DESTINO</span>
+                <span id="badge-destino" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
             </button>
 
-            <button onclick="switchTab('matricula')" id="nav-matricula" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
-                <i data-lucide="file-check" class="w-5 h-5"></i>
-                <span>MATRICULA</span>
-                <span id="badge-matricula" class="ml-auto text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-semibold">0</span>
+            <button onclick="switchTab('paquete')" id="nav-paquete" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
+                <i data-lucide="package" class="w-5 h-5"></i>
+                <span>PAQUETE_TURISTICO</span>
+                <span id="badge-paquete" class="ml-auto text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+            </button>
+
+            <button onclick="switchTab('reserva')" id="nav-reserva" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
+                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                <span>RESERVA</span>
+                <span id="badge-reserva" class="ml-auto text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/30 font-semibold">0</span>
             </button>
 
             <div class="pt-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Base de Datos</div>
-            <button onclick="showSqlModal()" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all duration-200">
+            <button onclick="showSqlModal()" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all duration-200">
                 <i data-lucide="database" class="w-5 h-5 text-emerald-400"></i>
                 <span class="text-emerald-300">Script SQL Supabase</span>
             </button>
@@ -112,12 +158,12 @@
         <div class="p-4 border-t border-slate-800/80 bg-slate-900/50">
             <div class="glass-card rounded-xl p-3 text-xs flex items-center space-x-3">
                 <div class="relative flex h-3 w-3 shrink-0">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    <span id="db-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span id="db-dot" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </div>
                 <div class="truncate">
                     <div class="font-semibold text-slate-200">BD: Supabase</div>
-                    <div class="text-[11px] text-slate-400 truncate">Conexión Activa</div>
+                    <div id="db-status-text" class="text-[11px] text-slate-400 truncate">Conectando...</div>
                 </div>
             </div>
         </div>
@@ -127,43 +173,66 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <main class="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900/80 to-slate-950">
 
         <!-- TOP BAR -->
-        <header class="h-16 border-b border-slate-800/80 px-6 flex items-center justify-between bg-slate-900/40 backdrop-blur-md shrink-0">
-            <div class="flex items-center space-x-3">
-                <h2 id="page-title" class="text-xl font-bold text-white truncate uppercase tracking-wider">Gestión de Tablas</h2>
+        <header class="h-16 border-b border-slate-800/80 px-4 md:px-6 flex items-center justify-between gap-3 bg-slate-900/40 backdrop-blur-md shrink-0">
+            <div class="flex items-center gap-3 min-w-0">
+                <h2 id="page-title" class="text-base md:text-xl font-bold text-white truncate tracking-wide">Panel de Control</h2>
             </div>
 
-            <div class="flex items-center space-x-4">
-                <!-- Global Search Bar -->
-                <div class="relative hidden sm:block w-72">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="table-search" onkeyup="filterCurrentTable()" placeholder="Buscar en la tabla..." class="w-full pl-9 pr-4 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            <div class="flex items-center gap-2">
+                <div id="filters-wrap" class="flex items-center gap-2">
+                    <!-- Global Search Bar -->
+                    <div class="relative hidden lg:block w-56 xl:w-72">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="table-search" placeholder="Buscar en la tabla..." class="w-full pl-9 pr-4 py-2 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10 transition-all">
+                    </div>
+
+                    <!-- Filter by ID -->
+                    <div class="relative w-24">
+                        <i data-lucide="hash" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="number" id="id-filter" min="1" placeholder="ID" title="Filtrar por ID" class="w-full pl-8 pr-2 py-2 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10 transition-all">
+                    </div>
+
+                    <!-- Filter by state (reservas) -->
+                    <select id="state-filter" class="hidden py-2 px-2 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10 transition-all">
+                        <option value="">Todos los estados</option>
+                        <option value="Confirmada">Confirmada</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Cancelada">Cancelada</option>
+                    </select>
+
+                    <button onclick="clearFilters()" class="p-2 text-slate-400 hover:text-cyan-300 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl transition-all" title="Limpiar filtros">
+                        <i data-lucide="eraser" class="w-4 h-4"></i>
+                    </button>
                 </div>
 
-                <button onclick="fetchAllData().then(renderTabContent)" class="p-2 text-xs bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-xl transition-all flex items-center space-x-1 shrink-0" title="Sincronizar Datos">
+                <button onclick="refreshData()" class="p-2 text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-xl transition-all flex items-center space-x-1 shrink-0" title="Sincronizar datos">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                    <span class="hidden md:inline">Actualizar</span>
+                    <span class="hidden md:inline font-semibold">Actualizar</span>
                 </button>
             </div>
         </header>
 
         <!-- DYNAMIC CONTENT AREA -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8" id="main-content">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8" id="main-content">
             <!-- Content loaded via JavaScript -->
         </div>
     </main>
 
     <!-- MODAL FORM (Crear / Editar) -->
-    <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="glass-card bg-slate-900/90 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
-                <h3 id="modal-title" class="font-bold text-base text-white flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i>
-                    <span>Nuevo Registro</span>
-                </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+    <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="modal-panel glass-card bg-slate-900/95 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-5 pb-4 border-b border-slate-800 gap-3">
+                <div>
+                    <h3 id="modal-title" class="font-bold text-base text-white flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i>
+                        <span>Nuevo Registro</span>
+                    </h3>
+                    <p id="modal-subtitle" class="text-[11px] text-slate-400 mt-1">Completa la información del registro.</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors shrink-0">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -173,456 +242,1329 @@
                     <!-- Dinámico por JavaScript -->
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 transition-all">Guardar en Supabase</button>
+                    <button type="button" onclick="closeModal()" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">Cancelar</button>
+                    <button type="submit" id="modal-submit" class="px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-110 text-slate-950 shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL SCRIPT SQL -->
-    <div id="sql-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="glass-card bg-slate-900/95 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+    <div id="sql-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="modal-panel glass-card bg-slate-900/95 border border-slate-800 rounded-2xl w-full max-w-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800 gap-3">
                 <h3 class="font-bold text-base text-white flex items-center gap-2">
                     <i data-lucide="code" class="w-5 h-5 text-emerald-400"></i>
                     <span>Script SQL para Supabase</span>
                 </h3>
-                <button onclick="closeSqlModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="copySql()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span>Copiar</span>
+                    </button>
+                    <button onclick="closeSqlModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
-            <pre class="bg-slate-950 p-4 rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-slate-800 max-h-96">
-CREATE TABLE "CARRERA" (
-    "ID_Carrera" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    "Nombre_Carrera" VARCHAR(100) NOT NULL
+            <pre id="sql-code" class="bg-slate-950 p-4 rounded-xl text-[11px] leading-relaxed font-mono text-emerald-400 overflow-auto border border-slate-800 flex-1">-- ============================================================
+-- SCRIPT SQL SUPABASE - AGENCIA DE VIAJES (TABLAS Y RELACIONES)
+-- ============================================================
+
+-- 1. LIMPIEZA DE TABLAS PREVIAS
+DROP TABLE IF EXISTS "RESERVA" CASCADE;
+DROP TABLE IF EXISTS "PAQUETE_TURISTICO" CASCADE;
+DROP TABLE IF EXISTS "DESTINO" CASCADE;
+DROP TABLE IF EXISTS "CLIENTE" CASCADE;
+
+-- 2. TABLA CLIENTE
+CREATE TABLE "CLIENTE" (
+    "ID_Cliente" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Nombre" VARCHAR(50) NOT NULL,
+    "Apellido" VARCHAR(50) NOT NULL,
+    "DNI" VARCHAR(8) UNIQUE NOT NULL,
+    "Correo_Electronico" VARCHAR(100) UNIQUE NOT NULL,
+    "Telefono" VARCHAR(15)
 );
 
-CREATE TABLE "ALUMNO" (
-    "ID_Alumno" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    "Nombre" VARCHAR(100) NOT NULL,
-    "DNI" VARCHAR(15) UNIQUE NOT NULL,
-    "ID_Carrera" BIGINT NOT NULL REFERENCES "CARRERA"("ID_Carrera") ON DELETE CASCADE
+-- 3. TABLA DESTINO
+CREATE TABLE "DESTINO" (
+    "ID_Destino" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Pais" VARCHAR(50) NOT NULL,
+    "Ciudad" VARCHAR(50) NOT NULL,
+    "Descripcion" VARCHAR(200)
 );
 
-CREATE TABLE "DOCENTE" (
-    "ID_Docente" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    "Nombre_Docente" VARCHAR(100) NOT NULL
+-- 4. TABLA PAQUETE_TURISTICO
+CREATE TABLE "PAQUETE_TURISTICO" (
+    "ID_Paquete" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "ID_Destino" BIGINT NOT NULL,
+    "Nombre_Paquete" VARCHAR(100) NOT NULL,
+    "Precio" NUMERIC(8,2) NOT NULL,
+    "Dias" INTEGER NOT NULL,
+
+    CONSTRAINT FK_PAQUETE_DESTINO 
+        FOREIGN KEY ("ID_Destino") 
+        REFERENCES "DESTINO"("ID_Destino") 
+        ON DELETE CASCADE
 );
 
-CREATE TABLE "CURSO" (
-    "ID_Curso" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    "Nombre_Curso" VARCHAR(100) NOT NULL,
-    "ID_Docente" BIGINT NOT NULL REFERENCES "DOCENTE"("ID_Docente") ON DELETE CASCADE
+-- 5. TABLA RESERVA
+CREATE TABLE "RESERVA" (
+    "ID_Reserva" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "ID_Cliente" BIGINT NOT NULL,
+    "ID_Paquete" BIGINT NOT NULL,
+    "Fecha_Reserva" DATE NOT NULL DEFAULT CURRENT_DATE,
+    "Estado" VARCHAR(20) NOT NULL,
+
+    CONSTRAINT FK_RESERVA_CLIENTE 
+        FOREIGN KEY ("ID_Cliente") 
+        REFERENCES "CLIENTE"("ID_Cliente") 
+        ON DELETE CASCADE,
+
+    CONSTRAINT FK_RESERVA_PAQUETE 
+        FOREIGN KEY ("ID_Paquete") 
+        REFERENCES "PAQUETE_TURISTICO"("ID_Paquete") 
+        ON DELETE CASCADE
 );
 
-CREATE TABLE "MATRICULA" (
-    "ID_Alumno" BIGINT NOT NULL REFERENCES "ALUMNO"("ID_Alumno") ON DELETE CASCADE,
-    "ID_Curso" BIGINT NOT NULL REFERENCES "CURSO"("ID_Curso") ON DELETE CASCADE,
-    "Nota" NUMERIC(4,2),
-    PRIMARY KEY ("ID_Alumno", "ID_Curso")
-);</pre>
+-- 6. INSERTAR DATOS INICIALES DE PRUEBA
+INSERT INTO "CLIENTE" ("Nombre", "Apellido", "DNI", "Correo_Electronico", "Telefono") VALUES
+('Juan', 'Pérez', '12345678', 'juan.perez@gmail.com', '987654321'),
+('María', 'López', '87654321', 'maria.lopez@gmail.com', '986543210'),
+('Carlos', 'Ramírez', '11223344', 'carlos.ramirez@gmail.com', '985432109');
+
+INSERT INTO "DESTINO" ("Pais", "Ciudad", "Descripcion") VALUES
+('Perú', 'Cusco', 'Capital del Imperio Inca'),
+('Perú', 'Arequipa', 'La Ciudad Blanca'),
+('México', 'Cancún', 'Playas del Caribe');
+
+INSERT INTO "PAQUETE_TURISTICO" ("ID_Destino", "Nombre_Paquete", "Precio", "Dias") VALUES
+(1, 'Cusco Mágico', 1200.00, 5),
+(2, 'Arequipa Colca', 750.00, 3),
+(3, 'Cancún Relax', 2500.00, 7);
+
+INSERT INTO "RESERVA" ("ID_Cliente", "ID_Paquete", "Fecha_Reserva", "Estado") VALUES
+(1, 1, '2026-09-01', 'Confirmada'),
+(2, 2, '2026-09-02', 'Pendiente'),
+(3, 3, '2026-09-05', 'Confirmada');</pre>
             <div class="flex justify-end">
-                <button onclick="closeSqlModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">Cerrar</button>
+                <button onclick="closeSqlModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">Cerrar</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL CONFIRMAR ELIMINACIÓN -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="modal-panel glass-card bg-slate-900/95 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <div class="flex items-start gap-3">
+                <div class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 shrink-0">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base text-white">Eliminar registro</h3>
+                    <p id="confirm-message" class="text-xs text-slate-400 mt-1">¿Seguro que deseas eliminar este registro?</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-5">
+                <button onclick="closeConfirm()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">Cancelar</button>
+                <button onclick="performDelete()" id="confirm-delete-btn" class="px-4 py-2 text-xs font-bold rounded-xl bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container" class="fixed bottom-4 left-4 right-4 sm:left-auto z-[60] flex flex-col gap-2 max-w-sm sm:w-96 pointer-events-none"></div>
+
     <!-- SCRIPT DE LOGICA Y SUPABASE -->
     <script>
-        // Configuración de credenciales Supabase
-        const SUPABASE_URL = 'https://dswunwvsvprwmzefiwkt.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_mjNcEsiDP5j-JnqZTd2nxA_ptb84GJo';
-        
-        // Inicializar cliente oficial de Supabase
+        // ============================================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================================
+        const SUPABASE_URL = 'https://fpsgwrtgwjvfpgrzxsma.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_w9tY7fVLn9n4UMKFOG8KtA_DEqJh8Rv';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentTab = 'carrera';
-        let localData = { carrera: [], docente: [], alumno: [], curso: [], matricula: [] };
+        // ============================================================
+        // IMÁGENES (puedes reemplazar estas URLs por las tuyas)
+        // ============================================================
+        const IMAGES = {
+            hero: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=80',
+            cusco: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=800&q=80',
+            arequipa: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80',
+            cancun: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+            default: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80'
+        };
 
-        // Mobile sidebar toggle
-        const mobileBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
+        // ============================================================
+        // CONFIGURACIÓN DE TABLAS
+        // ============================================================
+        const TABLE_CONFIG = {
+            cliente: { table: 'CLIENTE', pk: 'ID_Cliente', singular: 'Cliente', plural: 'Clientes' },
+            destino: { table: 'DESTINO', pk: 'ID_Destino', singular: 'Destino', plural: 'Destinos' },
+            paquete: { table: 'PAQUETE_TURISTICO', pk: 'ID_Paquete', singular: 'Paquete Turístico', plural: 'Paquetes Turísticos' },
+            reserva: { table: 'RESERVA', pk: 'ID_Reserva', singular: 'Reserva', plural: 'Reservas' }
+        };
 
-        if(mobileBtn) {
-            mobileBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-                overlay.classList.toggle('hidden');
-            });
-            overlay.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            });
+        const TAB_TITLES = {
+            inicio: 'Panel de Control',
+            cliente: 'Clientes',
+            destino: 'Destinos',
+            paquete: 'Paquetes Turísticos',
+            reserva: 'Reservas'
+        };
+
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
+        let currentTab = 'inicio';
+        let localData = { cliente: [], destino: [], paquete: [], reserva: [] };
+        let pendingDelete = null;
+        let dbErrorShown = false;
+        let editingId = '';
+
+        const mainContent = document.getElementById('main-content');
+
+        // ============================================================
+        // UTILIDADES
+        // ============================================================
+        function esc(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        // Cargar App al inicio
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            switchTab('carrera');
+        const moneyFormatter = new Intl.NumberFormat('es-PE', {
+            style: 'currency',
+            currency: 'PEN',
+            minimumFractionDigits: 2
         });
 
-        // Cambiar entre pestañas
-        async function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-indigo-400', 'bg-indigo-500/10', 'border', 'border-indigo-500/20');
-                btn.classList.add('text-slate-400');
+        function formatMoney(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? moneyFormatter.format(number) : '—';
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+            const parts = String(value).slice(0, 10).split('-');
+            if (parts.length !== 3) return esc(value);
+            const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            return date.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function todayISO() {
+            const now = new Date();
+            const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return local.toISOString().slice(0, 10);
+        }
+
+        function getDestinoImage(ciudad) {
+            const value = String(ciudad || '').toLowerCase();
+            if (value.includes('cusco') || value.includes('cuzco')) return IMAGES.cusco;
+            if (value.includes('arequipa')) return IMAGES.arequipa;
+            if (value.includes('canc')) return IMAGES.cancun;
+            return IMAGES.default;
+        }
+
+        function getCliente(id) {
+            return localData.cliente.find(item => String(item.ID_Cliente) === String(id));
+        }
+
+        function getDestino(id) {
+            return localData.destino.find(item => String(item.ID_Destino) === String(id));
+        }
+
+        function getPaquete(id) {
+            return localData.paquete.find(item => String(item.ID_Paquete) === String(id));
+        }
+
+        function idPill(id) {
+            return `<span class="inline-flex items-center rounded-lg border border-slate-700 bg-slate-800/80 px-2 py-1 font-mono text-[11px] text-cyan-300">#${esc(id)}</span>`;
+        }
+
+        function estadoBadge(estado) {
+            const value = String(estado || '').toLowerCase();
+            let classes = 'bg-slate-800 text-slate-300 border-slate-700';
+            let dot = 'bg-slate-400';
+
+            if (value === 'confirmada') {
+                classes = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+                dot = 'bg-emerald-400';
+            } else if (value === 'pendiente') {
+                classes = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+                dot = 'bg-amber-400';
+            } else if (value === 'cancelada') {
+                classes = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
+                dot = 'bg-rose-400';
+            }
+
+            return `<span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${classes}"><span class="w-1.5 h-1.5 rounded-full ${dot}"></span>${esc(estado || '—')}</span>`;
+        }
+
+        function toggleModal(element, show) {
+            if (!element) return;
+            element.classList.toggle('hidden', !show);
+            element.classList.toggle('flex', show);
+        }
+
+        // ============================================================
+        // NAVEGACIÓN
+        // ============================================================
+        function setActiveNav() {
+            document.querySelectorAll('.nav-btn').forEach(button => {
+                button.classList.remove('text-cyan-300', 'bg-cyan-500/10', 'border-cyan-500/20');
+                button.classList.add('text-slate-400');
             });
 
-            const activeBtn = document.getElementById(`nav-${tab}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400');
-                activeBtn.classList.add('text-indigo-400', 'bg-indigo-500/10', 'border', 'border-indigo-500/20');
+            const active = document.getElementById(`nav-${currentTab}`);
+            if (active) {
+                active.classList.remove('text-slate-400');
+                active.classList.add('text-cyan-300', 'bg-cyan-500/10', 'border-cyan-500/20');
             }
+        }
 
-            document.getElementById('page-title').innerText = `TABLA ${tab.toUpperCase()}`;
+        function updateHeader() {
+            document.getElementById('page-title').textContent = TAB_TITLES[currentTab] || currentTab;
+
+            const filters = document.getElementById('filters-wrap');
+            if (filters) filters.classList.toggle('hidden', currentTab === 'inicio');
+
+            const stateFilter = document.getElementById('state-filter');
+            if (stateFilter) stateFilter.classList.toggle('hidden', currentTab !== 'reserva');
+        }
+
+        function resetFilters() {
+            ['table-search', 'id-filter', 'state-filter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+        }
+
+        function clearFilters() {
+            resetFilters();
+            applyFilters();
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar && overlay && window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        async function switchTab(tab) {
+            currentTab = tab;
+            resetFilters();
+            updateHeader();
+            setActiveNav();
+            closeMobileSidebar();
             await fetchAllData();
             renderTabContent();
+            mainContent.scrollTop = 0;
         }
 
-        // Obtener datos desde Supabase
+        // ============================================================
+        // CARGA DE DATOS
+        // ============================================================
         async function fetchAllData() {
             try {
-                const [c, d, a, cu, m] = await Promise.all([
-                    _supabase.from('CARRERA').select('*'),
-                    _supabase.from('DOCENTE').select('*'),
-                    _supabase.from('ALUMNO').select('*, CARRERA(Nombre_Carrera)'),
-                    _supabase.from('CURSO').select('*, DOCENTE(Nombre_Docente)'),
-                    _supabase.from('MATRICULA').select('*, ALUMNO(Nombre), CURSO(Nombre_Curso)')
+                const [clientes, destinos, paquetes, reservas] = await Promise.all([
+                    _supabase.from('CLIENTE').select('*').order('ID_Cliente', { ascending: true }),
+                    _supabase.from('DESTINO').select('*').order('ID_Destino', { ascending: true }),
+                    _supabase.from('PAQUETE_TURISTICO').select('*').order('ID_Paquete', { ascending: true }),
+                    _supabase.from('RESERVA').select('*').order('ID_Reserva', { ascending: true })
                 ]);
 
-                localData.carrera = c.data || [];
-                localData.docente = d.data || [];
-                localData.alumno = a.data || [];
-                localData.curso = cu.data || [];
-                localData.matricula = m.data || [];
+                const firstError = [clientes.error, destinos.error, paquetes.error, reservas.error].find(Boolean);
+                if (firstError) throw firstError;
 
-                // Actualizar badges
-                document.getElementById('badge-carrera').innerText = localData.carrera.length;
-                document.getElementById('badge-docente').innerText = localData.docente.length;
-                document.getElementById('badge-alumno').innerText = localData.alumno.length;
-                document.getElementById('badge-curso').innerText = localData.curso.length;
-                document.getElementById('badge-matricula').innerText = localData.matricula.length;
+                localData.cliente = clientes.data || [];
+                localData.destino = destinos.data || [];
+                localData.paquete = paquetes.data || [];
+                localData.reserva = reservas.data || [];
 
-            } catch (err) {
-                console.error("Error al conectar a Supabase:", err);
+                dbErrorShown = false;
+                updateBadges();
+                setDbStatus(true);
+            } catch (error) {
+                console.error('Error al conectar a Supabase:', error);
+                localData = { cliente: [], destino: [], paquete: [], reserva: [] };
+                updateBadges();
+                setDbStatus(false);
+
+                if (!dbErrorShown) {
+                    showToast('No se pudieron cargar las tablas. Ejecuta el script SQL en Supabase.', 'error');
+                    dbErrorShown = true;
+                }
             }
         }
 
-        // Renderizar vistas dinámicas con diseño Tailwind
+        function updateBadges() {
+            const badges = {
+                cliente: 'badge-cliente',
+                destino: 'badge-destino',
+                paquete: 'badge-paquete',
+                reserva: 'badge-reserva'
+            };
+
+            Object.entries(badges).forEach(([key, id]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = localData[key].length;
+            });
+        }
+
+        function setDbStatus(connected) {
+            const text = document.getElementById('db-status-text');
+            const dot = document.getElementById('db-dot');
+            const ping = document.getElementById('db-ping');
+            if (!text || !dot || !ping) return;
+
+            text.textContent = connected ? 'Conexión activa' : 'Sin conexión';
+            text.className = `text-[11px] truncate ${connected ? 'text-slate-400' : 'text-rose-400'}`;
+            dot.className = `relative inline-flex rounded-full h-3 w-3 ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`;
+            ping.className = `animate-ping absolute inline-flex h-full w-full rounded-full ${connected ? 'bg-emerald-400' : 'bg-rose-400'} opacity-75`;
+        }
+
+        async function refreshData() {
+            await fetchAllData();
+            renderTabContent();
+            if (!dbErrorShown) showToast('Datos sincronizados con Supabase.', 'info');
+        }
+
+        // ============================================================
+        // RENDERIZADO GENERAL
+        // ============================================================
         function renderTabContent() {
-            const container = document.getElementById('main-content');
-            
-            let html = `
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            const scrollTop = mainContent.scrollTop;
+
+            if (currentTab === 'inicio') {
+                mainContent.innerHTML = renderInicio();
+            } else {
+                mainContent.innerHTML = renderTableTab();
+            }
+
+            lucide.createIcons();
+
+            if (currentTab !== 'inicio') applyFilters();
+            mainContent.scrollTop = scrollTop;
+        }
+
+        function sectionHeader(title, subtitle, action = '') {
+            return `
+                <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-white">Tabla ${currentTab.toUpperCase()}</h3>
-                        <p class="text-xs text-slate-400">Administración de registros sincronizados en Supabase</p>
+                        <h3 class="text-lg font-bold text-white">${title}</h3>
+                        <p class="text-xs text-slate-400">${subtitle}</p>
                     </div>
-                    <button onclick="openModal()" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-all">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>Nuevo Registro</span>
+                    ${action}
+                </div>
+            `;
+        }
+
+        function emptyInicioCard(message) {
+            return `
+                <div class="glass-card rounded-2xl border border-slate-800 p-8 text-center">
+                    <i data-lucide="compass" class="mx-auto mb-2 h-8 w-8 text-slate-600"></i>
+                    <p class="text-sm text-slate-400">${esc(message)}</p>
+                    <button onclick="showSqlModal()" class="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-200 hover:border-cyan-500/40 transition-colors">
+                        <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
+                        Ver script SQL
                     </button>
                 </div>
             `;
-
-            if (currentTab === 'carrera') {
-                html += renderTable(['ID_Carrera', 'Nombre_Carrera'], localData.carrera, 'ID_Carrera');
-            } else if (currentTab === 'docente') {
-                html += renderTable(['ID_Docente', 'Nombre_Docente'], localData.docente, 'ID_Docente');
-            } else if (currentTab === 'alumno') {
-                const rows = localData.alumno.map(item => ({
-                    ID_Alumno: item.ID_Alumno,
-                    Nombre: item.Nombre,
-                    DNI: item.DNI,
-                    Carrera: item.CARRERA ? item.CARRERA.Nombre_Carrera : item.ID_Carrera
-                }));
-                html += renderTable(['ID_Alumno', 'Nombre', 'DNI', 'Carrera'], rows, 'ID_Alumno');
-            } else if (currentTab === 'curso') {
-                const rows = localData.curso.map(item => ({
-                    ID_Curso: item.ID_Curso,
-                    Nombre_Curso: item.Nombre_Curso,
-                    Docente: item.DOCENTE ? item.DOCENTE.Nombre_Docente : item.ID_Docente
-                }));
-                html += renderTable(['ID_Curso', 'Nombre_Curso', 'Docente'], rows, 'ID_Curso');
-            } else if (currentTab === 'matricula') {
-                const rows = localData.matricula.map(item => ({
-                    Alumno: item.ALUMNO ? item.ALUMNO.Nombre : item.ID_Alumno,
-                    Curso: item.CURSO ? item.CURSO.Nombre_Curso : item.ID_Curso,
-                    Nota: item.Nota !== null ? item.Nota : 'Sin nota',
-                    _pk: `${item.ID_Alumno}-${item.ID_Curso}`
-                }));
-                html += renderTable(['Alumno', 'Curso', 'Nota'], rows, '_pk');
-            }
-
-            container.innerHTML = html;
-            lucide.createIcons();
         }
 
-        function renderTable(headers, data, pkField) {
-            if (!data || data.length === 0) {
-                return `
-                    <div class="glass-card rounded-2xl p-12 text-center text-slate-500 border border-slate-800">
-                        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
-                        <p class="text-sm">No hay registros disponibles en esta tabla.</p>
-                    </div>
-                `;
-            }
+        // ============================================================
+        // RENDERIZADO DEL INICIO
+        // ============================================================
+        function renderInicio() {
+            const totalIngresos = localData.reserva
+                .filter(reserva => String(reserva.Estado || '').toLowerCase() === 'confirmada')
+                .reduce((total, reserva) => {
+                    const paquete = getPaquete(reserva.ID_Paquete);
+                    return total + (paquete ? Number(paquete.Precio) || 0 : 0);
+                }, 0);
 
-            let ths = headers.map(h => `<th class="py-3.5 px-4">${h}</th>`).join('');
-            
-            let trs = data.map(row => {
-                let tds = headers.map(h => `<td class="py-3 px-4">${row[h] !== undefined ? row[h] : ''}</td>`).join('');
-                let rowId = row[pkField];
-                return `
-                    <tr class="hover:bg-slate-800/40 transition-colors">
-                        ${tds}
-                        <td class="py-3 px-4 text-right flex items-center justify-end gap-1">
-                            <button onclick="openModal('${rowId}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 rounded-lg hover:bg-indigo-500/10 transition-colors" title="Editar registro">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
+            const stats = [
+                { label: 'Clientes', value: localData.cliente.length, icon: 'users', accent: 'from-cyan-500/20 to-sky-500/5', iconColor: 'text-cyan-300', sub: 'Pasajeros registrados' },
+                { label: 'Destinos', value: localData.destino.length, icon: 'map-pin', accent: 'from-emerald-500/20 to-emerald-500/5', iconColor: 'text-emerald-300', sub: 'Ciudades disponibles' },
+                { label: 'Paquetes', value: localData.paquete.length, icon: 'package', accent: 'from-amber-500/20 to-amber-500/5', iconColor: 'text-amber-300', sub: 'Ofertas turísticas' },
+                { label: 'Reservas', value: localData.reserva.length, icon: 'calendar-check', accent: 'from-violet-500/20 to-violet-500/5', iconColor: 'text-violet-300', sub: 'Solicitudes registradas' }
+            ];
+
+            const hero = `
+                <section class="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-800 via-slate-900 to-cyan-950 shadow-2xl">
+                    <img src="${IMAGES.hero}" alt="Avión sobre las nubes" class="absolute inset-0 h-full w-full object-cover opacity-60" onerror="this.style.display='none'">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/20"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+
+                    <div class="relative p-6 sm:p-10 lg:p-14 max-w-3xl">
+                        <span class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-cyan-300">
+                            <i data-lucide="plane" class="w-3.5 h-3.5"></i>
+                            Agencia de viajes
+                        </span>
+
+                        <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-white">
+                            Tu próximo destino<br>
+                            <span class="bg-gradient-to-r from-cyan-300 to-sky-400 bg-clip-text text-transparent">comienza aquí</span>
+                        </h1>
+
+                        <p class="mt-4 max-w-xl text-sm sm:text-base text-slate-300">
+                            Gestiona clientes, destinos, paquetes turísticos y reservas desde un solo lugar. Vive experiencias inolvidables con Horizonte Viajes.
+                        </p>
+
+                        <div class="mt-7 flex flex-wrap gap-3">
+                            <button onclick="switchTab('paquete')" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 transition hover:brightness-110">
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                                Explorar paquetes
                             </button>
-                            <button onclick="deleteRow('${rowId}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors" title="Eliminar registro">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <button onclick="switchTab('reserva')" class="inline-flex items-center gap-2 rounded-xl border border-slate-600/80 bg-slate-900/60 px-5 py-3 text-sm font-semibold text-slate-200 backdrop-blur transition hover:border-cyan-400/40 hover:text-white">
+                                <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                                Gestionar reservas
                             </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+                        </div>
+
+                        <div class="mt-8 inline-flex items-center gap-3 rounded-2xl border border-slate-700/60 bg-slate-900/60 px-4 py-3 backdrop-blur">
+                            <div class="rounded-xl bg-emerald-500/10 p-2 text-emerald-300">
+                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-wider text-slate-400">Ingresos confirmados</p>
+                                <p class="text-lg font-bold text-white">${formatMoney(totalIngresos)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+
+            const statsHtml = `
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    ${stats.map(stat => `
+                        <div class="group glass-card relative overflow-hidden rounded-2xl border border-slate-800 p-5 transition hover:-translate-y-0.5 hover:border-slate-700">
+                            <div class="absolute inset-0 bg-gradient-to-br ${stat.accent} opacity-60"></div>
+                            <div class="relative flex items-start justify-between">
+                                <div>
+                                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">${stat.label}</p>
+                                    <p class="mt-2 text-3xl font-extrabold text-white">${stat.value}</p>
+                                    <p class="mt-1 text-[11px] text-slate-500">${stat.sub}</p>
+                                </div>
+                                <div class="rounded-xl border border-slate-700/70 bg-slate-900/70 p-2.5 ${stat.iconColor}">
+                                    <i data-lucide="${stat.icon}" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const destacados = localData.paquete.slice(0, 3);
+            const paquetesHtml = destacados.length ? `
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    ${destacados.map(paquete => {
+                        const destino = getDestino(paquete.ID_Destino);
+                        const ciudad = destino ? destino.Ciudad : 'Destino';
+                        const pais = destino ? destino.Pais : '';
+                        const imagen = getDestinoImage(ciudad);
+
+                        return `
+                            <article class="group glass-card overflow-hidden rounded-2xl border border-slate-800 transition hover:-translate-y-1 hover:border-cyan-500/30 hover:shadow-glow">
+                                <div class="relative h-44 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+                                    <img src="${imagen}" alt="${esc(ciudad)}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" onerror="this.style.display='none'">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                                    <div class="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-slate-950/70 px-2.5 py-1 text-[11px] font-medium text-slate-200 backdrop-blur">
+                                        <i data-lucide="map-pin" class="w-3 h-3 text-cyan-300"></i>
+                                        ${esc(ciudad)}${pais ? `, ${esc(pais)}` : ''}
+                                    </div>
+                                </div>
+                                <div class="p-5">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <h4 class="text-base font-bold text-white">${esc(paquete.Nombre_Paquete)}</h4>
+                                        <span class="shrink-0 rounded-lg bg-amber-400/10 px-2 py-1 text-xs font-bold text-amber-300">${formatMoney(paquete.Precio)}</span>
+                                    </div>
+                                    <div class="mt-3 flex items-center gap-4 text-[11px] text-slate-400">
+                                        <span class="inline-flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i>${esc(paquete.Dias)} días</span>
+                                        <span class="inline-flex items-center gap-1"><i data-lucide="plane" class="w-3.5 h-3.5"></i>Vuelo + hotel</span>
+                                    </div>
+                                    <button onclick="reservarPaquete('${paquete.ID_Paquete}')" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950">
+                                        <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                                        Reservar ahora
+                                    </button>
+                                </div>
+                            </article>
+                        `;
+                    }).join('')}
+                </div>
+            ` : emptyInicioCard('Aún no hay paquetes turísticos. Crea el primero desde la tabla PAQUETE_TURISTICO.');
+
+            const destinosHtml = localData.destino.length ? `
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    ${localData.destino.map(destino => {
+                        const count = localData.paquete.filter(paquete => String(paquete.ID_Destino) === String(destino.ID_Destino)).length;
+                        const imagen = getDestinoImage(destino.Ciudad);
+
+                        return `
+                            <article class="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+                                <div class="relative h-40 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+                                    <img src="${imagen}" alt="${esc(destino.Ciudad)}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" onerror="this.style.display='none'">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+                                    <div class="absolute bottom-3 left-4">
+                                        <p class="text-[11px] uppercase tracking-widest text-cyan-300">${esc(destino.Pais)}</p>
+                                        <h4 class="text-xl font-bold text-white">${esc(destino.Ciudad)}</h4>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <p class="line-clamp-2 text-xs text-slate-400">${esc(destino.Descripcion || 'Un destino por descubrir.')}</p>
+                                    <div class="mt-4 flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+                                            <i data-lucide="package" class="w-3.5 h-3.5"></i>
+                                            ${count} paquete${count === 1 ? '' : 's'}
+                                        </span>
+                                        <button onclick="verPaquetesDeDestino('${destino.ID_Destino}')" class="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-300 hover:text-cyan-200">
+                                            Ver paquetes
+                                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                    }).join('')}
+                </div>
+            ` : emptyInicioCard('Aún no hay destinos registrados.');
+
+            const recientes = [...localData.reserva]
+                .sort((a, b) => {
+                    const dateA = a.Fecha_Reserva || '';
+                    const dateB = b.Fecha_Reserva || '';
+                    if (dateA === dateB) return Number(b.ID_Reserva) - Number(a.ID_Reserva);
+                    return dateB.localeCompare(dateA);
+                })
+                .slice(0, 5);
+
+            const recientesHtml = recientes.length ? `
+                <div class="glass-card overflow-hidden rounded-2xl border border-slate-800">
+                    <div class="divide-y divide-slate-800/70">
+                        ${recientes.map(reserva => {
+                            const cliente = getCliente(reserva.ID_Cliente);
+                            const paquete = getPaquete(reserva.ID_Paquete);
+
+                            return `
+                                <div class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
+                                            <i data-lucide="ticket" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-100">${esc(cliente ? `${cliente.Nombre} ${cliente.Apellido}` : `Cliente #${reserva.ID_Cliente}`)}</p>
+                                            <p class="text-[11px] text-slate-500">${esc(paquete ? paquete.Nombre_Paquete : `Paquete #${reserva.ID_Paquete}`)} · ${formatDate(reserva.Fecha_Reserva)}</p>
+                                        </div>
+                                    </div>
+                                    ${estadoBadge(reserva.Estado)}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : emptyInicioCard('Todavía no hay reservas registradas.');
 
             return `
-                <div class="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+                <div class="space-y-8">
+                    ${hero}
+                    ${statsHtml}
+
+                    <section>
+                        ${sectionHeader('Paquetes destacados', 'Las experiencias favoritas de nuestros viajeros', `
+                            <button onclick="switchTab('paquete')" class="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-[11px] font-semibold text-slate-200 hover:border-cyan-500/40 hover:text-white transition-colors sm:self-auto">
+                                Ver todos
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        `)}
+                        ${paquetesHtml}
+                    </section>
+
+                    <section>
+                        ${sectionHeader('Destinos populares', 'Explora los lugares que tenemos para ti', `
+                            <button onclick="switchTab('destino')" class="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-[11px] font-semibold text-slate-200 hover:border-cyan-500/40 hover:text-white transition-colors sm:self-auto">
+                                Gestionar destinos
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        `)}
+                        ${destinosHtml}
+                    </section>
+
+                    <section>
+                        ${sectionHeader('Últimas reservas', 'Actividad reciente de la agencia', `
+                            <button onclick="switchTab('reserva')" class="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-[11px] font-semibold text-slate-200 hover:border-cyan-500/40 hover:text-white transition-colors sm:self-auto">
+                                Ver reservas
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        `)}
+                        ${recientesHtml}
+                    </section>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // RENDERIZADO DE TABLAS
+        // ============================================================
+        function renderTableTab() {
+            const configs = {
+                cliente: {
+                    title: 'Clientes',
+                    subtitle: 'Administra los pasajeros registrados en la agencia.',
+                    headers: ['ID', 'Nombre', 'Apellido', 'DNI', 'Correo electrónico', 'Teléfono'],
+                    rows: localData.cliente.map(cliente => ({
+                        id: cliente.ID_Cliente,
+                        search: [cliente.ID_Cliente, cliente.Nombre, cliente.Apellido, cliente.DNI, cliente.Correo_Electronico, cliente.Telefono].filter(Boolean).join(' '),
+                        cells: [
+                            idPill(cliente.ID_Cliente),
+                            `<span class="font-semibold text-slate-100">${esc(cliente.Nombre)}</span>`,
+                            esc(cliente.Apellido),
+                            `<span class="font-mono text-[11px] text-slate-300">${esc(cliente.DNI || '—')}</span>`,
+                            `<a href="mailto:${esc(cliente.Correo_Electronico)}" class="text-cyan-300 hover:underline">${esc(cliente.Correo_Electronico)}</a>`,
+                            esc(cliente.Telefono || '—')
+                        ]
+                    }))
+                },
+                destino: {
+                    title: 'Destinos',
+                    subtitle: 'Ciudades y países disponibles para los paquetes turísticos.',
+                    headers: ['ID', 'País', 'Ciudad', 'Descripción', 'Paquetes'],
+                    rows: localData.destino.map(destino => {
+                        const count = localData.paquete.filter(paquete => String(paquete.ID_Destino) === String(destino.ID_Destino)).length;
+
+                        return {
+                            id: destino.ID_Destino,
+                            search: [destino.ID_Destino, destino.Pais, destino.Ciudad, destino.Descripcion].filter(Boolean).join(' '),
+                            cells: [
+                                idPill(destino.ID_Destino),
+                                esc(destino.Pais),
+                                `<span class="font-semibold text-slate-100">${esc(destino.Ciudad)}</span>`,
+                                `<span class="block max-w-[280px] truncate text-slate-400" title="${esc(destino.Descripcion || '')}">${esc(destino.Descripcion || '—')}</span>`,
+                                `<span class="inline-flex items-center gap-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300"><i data-lucide="package" class="w-3 h-3"></i>${count}</span>`
+                            ]
+                        };
+                    })
+                },
+                paquete: {
+                    title: 'Paquetes Turísticos',
+                    subtitle: 'Ofertas de viaje con destino, precio y duración.',
+                    headers: ['ID', 'Paquete', 'Destino', 'Precio', 'Duración'],
+                    rows: localData.paquete.map(paquete => {
+                        const destino = getDestino(paquete.ID_Destino);
+
+                        return {
+                            id: paquete.ID_Paquete,
+                            search: [paquete.ID_Paquete, paquete.Nombre_Paquete, paquete.Precio, paquete.Dias, destino?.Pais, destino?.Ciudad].filter(Boolean).join(' '),
+                            cells: [
+                                idPill(paquete.ID_Paquete),
+                                `<span class="font-semibold text-slate-100">${esc(paquete.Nombre_Paquete)}</span>`,
+                                destino ? `<span class="inline-flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-cyan-300"></i>${esc(destino.Ciudad)}, ${esc(destino.Pais)}</span>` : '—',
+                                `<span class="font-semibold text-amber-300">${formatMoney(paquete.Precio)}</span>`,
+                                `<span class="inline-flex items-center gap-1 text-slate-400"><i data-lucide="clock" class="w-3 h-3"></i>${esc(paquete.Dias)} días</span>`
+                            ]
+                        };
+                    })
+                },
+                reserva: {
+                    title: 'Reservas',
+                    subtitle: 'Seguimiento de las reservas realizadas por los clientes.',
+                    headers: ['ID', 'Cliente', 'Paquete', 'Destino', 'Fecha', 'Estado'],
+                    rows: localData.reserva.map(reserva => {
+                        const cliente = getCliente(reserva.ID_Cliente);
+                        const paquete = getPaquete(reserva.ID_Paquete);
+                        const destino = paquete ? getDestino(paquete.ID_Destino) : null;
+
+                        return {
+                            id: reserva.ID_Reserva,
+                            estado: reserva.Estado,
+                            search: [reserva.ID_Reserva, cliente?.Nombre, cliente?.Apellido, paquete?.Nombre_Paquete, destino?.Ciudad, reserva.Estado, reserva.Fecha_Reserva].filter(Boolean).join(' '),
+                            cells: [
+                                idPill(reserva.ID_Reserva),
+                                cliente
+                                    ? `<span class="font-semibold text-slate-100">${esc(cliente.Nombre)} ${esc(cliente.Apellido)}</span><span class="block text-[11px] text-slate-500">${esc(cliente.Correo_Electronico)}</span>`
+                                    : `Cliente #${esc(reserva.ID_Cliente)}`,
+                                paquete ? esc(paquete.Nombre_Paquete) : `Paquete #${esc(reserva.ID_Paquete)}`,
+                                destino ? esc(destino.Ciudad) : '—',
+                                `<span class="whitespace-nowrap">${formatDate(reserva.Fecha_Reserva)}</span>`,
+                                estadoBadge(reserva.Estado)
+                            ]
+                        };
+                    })
+                }
+            };
+
+            const config = configs[currentTab];
+            if (!config) return '';
+
+            return `
+                <div class="space-y-6">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">${config.title}</h3>
+                            <p class="text-xs text-slate-400">${config.subtitle}</p>
+                        </div>
+                        <button onclick="openModal()" class="inline-flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Nuevo Registro</span>
+                        </button>
+                    </div>
+
+                    ${buildTable(config.headers, config.rows)}
+                </div>
+            `;
+        }
+
+        function buildTable(headers, rows) {
+            const total = rows.length;
+            if (!total) return emptyTableState();
+
+            const ths = headers.map(header => `<th class="whitespace-nowrap px-4 py-3.5">${header}</th>`).join('');
+
+            const trs = rows.map(row => `
+                <tr data-id="${esc(row.id)}" data-search="${esc(row.search)}" data-estado="${esc(row.estado || '')}" class="group transition-colors hover:bg-slate-800/40">
+                    ${row.cells.map(cell => `<td class="px-4 py-3 align-middle">${cell}</td>`).join('')}
+                    <td class="px-4 py-3 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="openModal('${esc(row.id)}')" class="rounded-lg p-1.5 text-cyan-300 transition hover:bg-cyan-500/10 hover:text-cyan-200" title="Editar registro">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="requestDelete('${esc(row.id)}')" class="rounded-lg p-1.5 text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300" title="Eliminar registro">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="glass-card overflow-hidden rounded-2xl border border-slate-800">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse" id="data-table">
-                            <thead>
-                                <tr class="bg-slate-900/80 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                        <table id="data-table" class="w-full border-collapse text-left text-xs text-slate-300">
+                            <thead class="sticky top-0 z-10 bg-slate-900/95 backdrop-blur">
+                                <tr class="border-b border-slate-800 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                                     ${ths}
-                                    <th class="py-3.5 px-4 text-right">Acciones</th>
+                                    <th class="px-4 py-3.5 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-800/60 text-xs text-slate-300">
+                            <tbody class="divide-y divide-slate-800/60">
                                 ${trs}
                             </tbody>
                         </table>
                     </div>
+                    <div class="flex flex-col gap-2 border-t border-slate-800/80 px-4 py-3 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                        <span>Mostrando <span id="visible-count" class="font-semibold text-slate-300">${total}</span> de ${total} registros</span>
+                        <span class="inline-flex items-center gap-1">
+                            <i data-lucide="arrow-down-up" class="w-3 h-3"></i>
+                            Ordenado por ID
+                        </span>
+                    </div>
                 </div>
             `;
         }
 
-        // Modal para insertar o editar registro
-        function openModal(id = null) {
-            const fieldsContainer = document.getElementById('modal-fields');
-            const editingInput = document.getElementById('editing-id');
-            editingInput.value = id || '';
+        function emptyTableState() {
+            return `
+                <div class="glass-card rounded-2xl border border-slate-800 p-12 text-center">
+                    <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800/70 text-slate-500">
+                        <i data-lucide="inbox" class="h-7 w-7"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-300">No hay registros en esta tabla</p>
+                    <p class="mt-1 text-xs text-slate-500">Agrega un nuevo registro o ejecuta el script SQL si acabas de crear la base de datos.</p>
+                    <div class="mt-5 flex flex-wrap justify-center gap-2">
+                        <button onclick="openModal()" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-xs font-bold text-slate-950">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Nuevo registro
+                        </button>
+                        <button onclick="showSqlModal()" class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-200">
+                            <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
+                            Ver SQL
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
 
-            const isEdit = Boolean(id);
-            document.getElementById('modal-title').querySelector('span').innerText = isEdit 
-                ? `Editar Registro en ${currentTab.toUpperCase()}`
-                : `Nuevo Registro en ${currentTab.toUpperCase()}`;
-            
-            // Buscar datos para editar si aplica
-            let itemToEdit = null;
-            if (isEdit) {
-                if (currentTab === 'matricula') {
-                    const [idA, idC] = id.split('-');
-                    itemToEdit = localData.matricula.find(m => String(m.ID_Alumno) === idA && String(m.ID_Curso) === idC);
-                } else {
-                    const pkName = currentTab === 'carrera' ? 'ID_Carrera' :
-                                   currentTab === 'docente' ? 'ID_Docente' :
-                                   currentTab === 'alumno' ? 'ID_Alumno' : 'ID_Curso';
-                    itemToEdit = localData[currentTab].find(x => String(x[pkName]) === String(id));
+        // ============================================================
+        // FORMULARIOS
+        // ============================================================
+        function inputField({ label, name, type = 'text', value = '', required = false, placeholder = '', step, min, max, maxlength, pattern, inputmode, title }) {
+            const dataType = type === 'number' ? 'number' : 'string';
+
+            return `
+                <div>
+                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        ${esc(label)}${required ? ' <span class="text-rose-400">*</span>' : ''}
+                    </label>
+                    <input
+                        type="${type}"
+                        name="${name}"
+                        value="${esc(value)}"
+                        ${required ? 'required' : ''}
+                        ${placeholder ? `placeholder="${esc(placeholder)}"` : ''}
+                        ${step ? `step="${step}"` : ''}
+                        ${min !== undefined ? `min="${min}"` : ''}
+                        ${max !== undefined ? `max="${max}"` : ''}
+                        ${maxlength !== undefined ? `maxlength="${maxlength}"` : ''}
+                        ${pattern ? `pattern="${pattern}"` : ''}
+                        ${inputmode ? `inputmode="${inputmode}"` : ''}
+                        ${title ? `title="${esc(title)}"` : ''}
+                        data-type="${dataType}"
+                        class="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10"
+                    >
+                </div>
+            `;
+        }
+
+        function selectField({ label, name, options, value = '', required = false, dataType = 'number' }) {
+            const opts = options.map(option => `
+                <option value="${esc(option.value)}" ${String(option.value) === String(value) ? 'selected' : ''}>${esc(option.label)}</option>
+            `).join('');
+
+            return `
+                <div>
+                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        ${esc(label)}${required ? ' <span class="text-rose-400">*</span>' : ''}
+                    </label>
+                    <select name="${name}" ${required ? 'required' : ''} data-type="${dataType}" class="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10">
+                        ${options.length ? opts : '<option value="">Sin opciones disponibles</option>'}
+                    </select>
+                </div>
+            `;
+        }
+
+        function textareaField({ label, name, value = '', placeholder = '', maxlength }) {
+            return `
+                <div>
+                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400">${esc(label)}</label>
+                    <textarea name="${name}" rows="3" ${maxlength !== undefined ? `maxlength="${maxlength}"` : ''} placeholder="${esc(placeholder)}" data-type="string" class="w-full resize-none rounded-xl border border-slate-700/80 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/10">${esc(value)}</textarea>
+                </div>
+            `;
+        }
+
+        function buildFormFields(item, preset = {}) {
+            const value = (key, fallback = '') => {
+                return item && item[key] !== undefined && item[key] !== null ? item[key] : fallback;
+            };
+
+            if (currentTab === 'cliente') {
+                return `
+                    ${inputField({ label: 'Nombre', name: 'Nombre', value: value('Nombre'), required: true, placeholder: 'Ej. Juan', maxlength: 50 })}
+                    ${inputField({ label: 'Apellido', name: 'Apellido', value: value('Apellido'), required: true, placeholder: 'Ej. Pérez', maxlength: 50 })}
+                    ${inputField({ label: 'DNI', name: 'DNI', value: value('DNI'), required: true, placeholder: '12345678', maxlength: 8, pattern: '[0-9]{8}', inputmode: 'numeric', title: 'El DNI debe tener 8 dígitos' })}
+                    ${inputField({ label: 'Correo electrónico', name: 'Correo_Electronico', type: 'email', value: value('Correo_Electronico'), required: true, placeholder: 'correo@ejemplo.com', maxlength: 100 })}
+                    ${inputField({ label: 'Teléfono', name: 'Telefono', type: 'tel', value: value('Telefono'), placeholder: '987 654 321', maxlength: 15 })}
+                `;
+            }
+
+            if (currentTab === 'destino') {
+                return `
+                    ${inputField({ label: 'País', name: 'Pais', value: value('Pais'), required: true, placeholder: 'Ej. Perú', maxlength: 50 })}
+                    ${inputField({ label: 'Ciudad', name: 'Ciudad', value: value('Ciudad'), required: true, placeholder: 'Ej. Cusco', maxlength: 50 })}
+                    ${textareaField({ label: 'Descripción', name: 'Descripcion', value: value('Descripcion'), placeholder: 'Describe brevemente el destino...', maxlength: 200 })}
+                `;
+            }
+
+            if (currentTab === 'paquete') {
+                const destinos = localData.destino.map(destino => ({
+                    value: destino.ID_Destino,
+                    label: `${destino.Ciudad} — ${destino.Pais}`
+                }));
+
+                return `
+                    ${selectField({ label: 'Destino', name: 'ID_Destino', options: destinos, value: value('ID_Destino', preset.ID_Destino), required: true })}
+                    ${inputField({ label: 'Nombre del paquete', name: 'Nombre_Paquete', value: value('Nombre_Paquete'), required: true, placeholder: 'Ej. Cusco Mágico', maxlength: 100 })}
+                    <div class="grid grid-cols-2 gap-3">
+                        ${inputField({ label: 'Precio (S/)', name: 'Precio', type: 'number', value: value('Precio'), required: true, step: '0.01', min: '0', placeholder: '1200.00' })}
+                        ${inputField({ label: 'Días', name: 'Dias', type: 'number', value: value('Dias'), required: true, step: '1', min: '1', placeholder: '5' })}
+                    </div>
+                `;
+            }
+
+            if (currentTab === 'reserva') {
+                const clientes = localData.cliente.map(cliente => ({
+                    value: cliente.ID_Cliente,
+                    label: `${cliente.Nombre} ${cliente.Apellido}`
+                }));
+
+                const paquetes = localData.paquete.map(paquete => ({
+                    value: paquete.ID_Paquete,
+                    label: `${paquete.Nombre_Paquete} · ${formatMoney(paquete.Precio)}`
+                }));
+
+                const estados = ['Confirmada', 'Pendiente', 'Cancelada'].map(estado => ({
+                    value: estado,
+                    label: estado
+                }));
+
+                return `
+                    ${selectField({ label: 'Cliente', name: 'ID_Cliente', options: clientes, value: value('ID_Cliente', preset.ID_Cliente), required: true })}
+                    ${selectField({ label: 'Paquete turístico', name: 'ID_Paquete', options: paquetes, value: value('ID_Paquete', preset.ID_Paquete), required: true })}
+                    <div class="grid grid-cols-2 gap-3">
+                        ${inputField({ label: 'Fecha de reserva', name: 'Fecha_Reserva', type: 'date', value: String(value('Fecha_Reserva', todayISO())).slice(0, 10), required: true })}
+                        ${selectField({ label: 'Estado', name: 'Estado', options: estados, value: value('Estado', 'Pendiente'), required: true, dataType: 'string' })}
+                    </div>
+                `;
+            }
+
+            return '';
+        }
+
+        function openModal(id = null, preset = {}) {
+            const isEdit = id !== null && id !== undefined && id !== '';
+            editingId = isEdit ? String(id) : '';
+
+            if (!isEdit && currentTab === 'reserva') {
+                if (!localData.cliente.length) {
+                    showToast('Primero registra al menos un cliente.', 'warning');
+                    switchTab('cliente');
+                    return;
+                }
+                if (!localData.paquete.length) {
+                    showToast('Primero registra al menos un paquete turístico.', 'warning');
+                    switchTab('paquete');
+                    return;
                 }
             }
 
-            let html = '';
-            if (currentTab === 'carrera') {
-                const valNombre = itemToEdit ? itemToEdit.Nombre_Carrera : '';
-                html = `<div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Nombre Carrera</label>
-                            <input type="text" name="Nombre_Carrera" value="${valNombre}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                        </div>`;
-            } else if (currentTab === 'docente') {
-                const valNombre = itemToEdit ? itemToEdit.Nombre_Docente : '';
-                html = `<div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Nombre Docente</label>
-                            <input type="text" name="Nombre_Docente" value="${valNombre}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                        </div>`;
-            } else if (currentTab === 'alumno') {
-                const valNombre = itemToEdit ? itemToEdit.Nombre : '';
-                const valDni = itemToEdit ? itemToEdit.DNI : '';
-                const valCarrera = itemToEdit ? itemToEdit.ID_Carrera : '';
-
-                let options = localData.carrera.map(c => `
-                    <option value="${c.ID_Carrera}" ${String(c.ID_Carrera) === String(valCarrera) ? 'selected' : ''}>${c.Nombre_Carrera}</option>
-                `).join('');
-
-                html = `
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Nombre Completo</label>
-                        <input type="text" name="Nombre" value="${valNombre}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 mb-3">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">DNI</label>
-                        <input type="text" name="DNI" value="${valDni}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 mb-3">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Carrera</label>
-                        <select name="ID_Carrera" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">${options}</select>
-                    </div>
-                `;
-            } else if (currentTab === 'curso') {
-                const valNombre = itemToEdit ? itemToEdit.Nombre_Curso : '';
-                const valDocente = itemToEdit ? itemToEdit.ID_Docente : '';
-
-                let options = localData.docente.map(d => `
-                    <option value="${d.ID_Docente}" ${String(d.ID_Docente) === String(valDocente) ? 'selected' : ''}>${d.Nombre_Docente}</option>
-                `).join('');
-
-                html = `
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Curso</label>
-                        <input type="text" name="Nombre_Curso" value="${valNombre}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 mb-3">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Docente Asignado</label>
-                        <select name="ID_Docente" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">${options}</select>
-                    </div>
-                `;
-            } else if (currentTab === 'matricula') {
-                const valAlumno = itemToEdit ? itemToEdit.ID_Alumno : '';
-                const valCurso = itemToEdit ? itemToEdit.ID_Curso : '';
-                const valNota = itemToEdit && itemToEdit.Nota !== null ? itemToEdit.Nota : '';
-
-                let optAlumnos = localData.alumno.map(a => `
-                    <option value="${a.ID_Alumno}" ${String(a.ID_Alumno) === String(valAlumno) ? 'selected' : ''}>${a.Nombre}</option>
-                `).join('');
-                let optCursos = localData.curso.map(c => `
-                    <option value="${c.ID_Curso}" ${String(c.ID_Curso) === String(valCurso) ? 'selected' : ''}>${c.Nombre_Curso}</option>
-                `).join('');
-
-                html = `
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Alumno</label>
-                        <select name="ID_Alumno" ${isEdit ? 'disabled' : ''} required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 mb-3">${optAlumnos}</select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Curso</label>
-                        <select name="ID_Curso" ${isEdit ? 'disabled' : ''} required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 mb-3">${optCursos}</select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Nota</label>
-                        <input type="number" step="0.1" name="Nota" value="${valNota}" required min="0" max="20" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                `;
+            if (!isEdit && currentTab === 'paquete' && !localData.destino.length) {
+                showToast('Primero registra al menos un destino.', 'warning');
+                switchTab('destino');
+                return;
             }
 
-            fieldsContainer.innerHTML = html;
-            document.getElementById('modal').classList.remove('hidden');
+            const config = TABLE_CONFIG[currentTab];
+            const item = isEdit ? localData[currentTab].find(row => String(row[config.pk]) === editingId) : null;
+
+            if (isEdit && !item) {
+                showToast('No se encontró el registro seleccionado.', 'error');
+                return;
+            }
+
+            document.getElementById('editing-id').value = editingId;
+            document.getElementById('modal-title').querySelector('span').textContent = isEdit
+                ? `Editar ${config.singular}`
+                : `Nuevo ${config.singular}`;
+
+            document.getElementById('modal-subtitle').textContent = isEdit
+                ? `Actualiza los datos del registro #${editingId}.`
+                : `Completa la información para registrar un nuevo ${config.singular.toLowerCase()}.`;
+
+            document.getElementById('modal-submit').textContent = isEdit ? 'Guardar cambios' : 'Crear registro';
+
+            const fields = document.getElementById('modal-fields');
+            fields.innerHTML = buildFormFields(item, preset);
+
+            toggleModal(document.getElementById('modal'), true);
+
+            setTimeout(() => {
+                const firstField = fields.querySelector('input:not([type="hidden"]), select, textarea');
+                if (firstField) firstField.focus();
+            }, 50);
         }
 
         function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
+            toggleModal(document.getElementById('modal'), false);
+            const form = document.getElementById('modal-form');
+            if (form) form.reset();
+            const fields = document.getElementById('modal-fields');
+            if (fields) fields.innerHTML = '';
+            const editingInput = document.getElementById('editing-id');
+            if (editingInput) editingInput.value = '';
+            editingId = '';
         }
 
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const editing = document.getElementById('editing-id').value;
+            const payload = {};
+
+            const fields = Array.from(form.querySelectorAll('[name]')).filter(field => field.name !== 'editing_id');
+
+            for (const field of fields) {
+                const rawValue = field.value.trim();
+                const type = field.dataset.type || 'string';
+
+                if (rawValue === '') {
+                    if (field.required) {
+                        showToast('Completa todos los campos obligatorios.', 'warning');
+                        field.focus();
+                        return;
+                    }
+                    payload[field.name] = null;
+                } else if (type === 'number') {
+                    const number = Number(rawValue);
+                    if (!Number.isFinite(number)) {
+                        showToast(`El campo ${field.name} debe ser numérico.`, 'warning');
+                        field.focus();
+                        return;
+                    }
+                    payload[field.name] = number;
+                } else {
+                    payload[field.name] = rawValue;
+                }
+            }
+
+            const config = TABLE_CONFIG[currentTab];
+            const submitButton = document.getElementById('modal-submit');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Guardando...';
+
+            let result;
+            if (editing) {
+                result = await _supabase
+                    .from(config.table)
+                    .update(payload)
+                    .eq(config.pk, editing);
+            } else {
+                result = await _supabase
+                    .from(config.table)
+                    .insert([payload]);
+            }
+
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+
+            if (result.error) {
+                showToast('Error en Supabase: ' + result.error.message, 'error');
+                return;
+            }
+
+            closeModal();
+            showToast(editing ? 'Registro actualizado correctamente.' : 'Registro creado correctamente.', 'success');
+
+            await fetchAllData();
+            renderTabContent();
+        }
+
+        // ============================================================
+        // ELIMINACIÓN
+        // ============================================================
+        function requestDelete(id) {
+            const config = TABLE_CONFIG[currentTab];
+            const item = localData[currentTab].find(row => String(row[config.pk]) === String(id));
+
+            let label = `${config.singular} #${id}`;
+
+            if (currentTab === 'cliente' && item) label = `${item.Nombre} ${item.Apellido}`;
+            if (currentTab === 'destino' && item) label = `${item.Ciudad}, ${item.Pais}`;
+            if (currentTab === 'paquete' && item) label = item.Nombre_Paquete;
+            if (currentTab === 'reserva' && item) label = `Reserva #${item.ID_Reserva}`;
+
+            pendingDelete = { tab: currentTab, id: String(id), label };
+
+            document.getElementById('confirm-message').innerHTML = `
+                ¿Eliminar <span class="font-semibold text-slate-200">${esc(label)}</span>? Esta acción no se puede deshacer.
+            `;
+
+            toggleModal(document.getElementById('confirm-modal'), true);
+        }
+
+        function closeConfirm() {
+            pendingDelete = null;
+            toggleModal(document.getElementById('confirm-modal'), false);
+        }
+
+        async function performDelete() {
+            if (!pendingDelete) return;
+
+            const { tab, id } = pendingDelete;
+            const config = TABLE_CONFIG[tab];
+            const button = document.getElementById('confirm-delete-btn');
+            const originalText = button.textContent;
+
+            button.disabled = true;
+            button.textContent = 'Eliminando...';
+
+            const result = await _supabase
+                .from(config.table)
+                .delete()
+                .eq(config.pk, id);
+
+            button.disabled = false;
+            button.textContent = originalText;
+
+            if (result.error) {
+                showToast('Error al eliminar: ' + result.error.message, 'error');
+                return;
+            }
+
+            closeConfirm();
+            showToast('Registro eliminado correctamente.', 'success');
+
+            await fetchAllData();
+            renderTabContent();
+        }
+
+        // ============================================================
+        // FILTROS
+        // ============================================================
+        function applyFilters() {
+            const textQuery = (document.getElementById('table-search')?.value || '').toLowerCase().trim();
+            const idQuery = (document.getElementById('id-filter')?.value || '').trim();
+            const stateQuery = document.getElementById('state-filter')?.value || '';
+
+            const rows = document.querySelectorAll('#data-table tbody tr');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const search = (row.dataset.search || '').toLowerCase();
+                const id = row.dataset.id || '';
+                const state = row.dataset.estado || '';
+
+                const matchesText = !textQuery || search.includes(textQuery);
+                const matchesId = !idQuery || id === idQuery;
+                const matchesState = !stateQuery || state === stateQuery;
+
+                const show = matchesText && matchesId && matchesState;
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            const count = document.getElementById('visible-count');
+            if (count) count.textContent = visible;
+        }
+
+        // ============================================================
+        // ACCIONES RÁPIDAS DEL INICIO
+        // ============================================================
+        async function reservarPaquete(idPaquete) {
+            if (!localData.cliente.length) {
+                showToast('Registra un cliente antes de crear una reserva.', 'warning');
+                await switchTab('cliente');
+                return;
+            }
+
+            await switchTab('reserva');
+            openModal(null, { ID_Paquete: idPaquete });
+        }
+
+        async function verPaquetesDeDestino(idDestino) {
+            const destino = getDestino(idDestino);
+            await switchTab('paquete');
+
+            if (destino) {
+                const search = document.getElementById('table-search');
+                if (search) {
+                    search.value = destino.Ciudad;
+                    applyFilters();
+                }
+            }
+        }
+
+        // ============================================================
+        // MODALES SQL
+        // ============================================================
         function showSqlModal() {
-            document.getElementById('sql-modal').classList.remove('hidden');
+            toggleModal(document.getElementById('sql-modal'), true);
         }
 
         function closeSqlModal() {
-            document.getElementById('sql-modal').classList.add('hidden');
+            toggleModal(document.getElementById('sql-modal'), false);
         }
 
-        // Guardar o Editar registro en Supabase
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const editingId = formData.get('editing_id');
-            formData.delete('editing_id');
+        async function copySql() {
+            try {
+                await navigator.clipboard.writeText(document.getElementById('sql-code').textContent);
+                showToast('Script SQL copiado al portapapeles.', 'success');
+            } catch (error) {
+                showToast('No se pudo copiar. Selecciona el texto manualmente.', 'error');
+            }
+        }
 
-            const payload = {};
-            formData.forEach((value, key) => payload[key] = value);
+        // ============================================================
+        // TOASTS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
 
-            let error = null;
+            const styles = {
+                success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+                error: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+                warning: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+                info: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+            };
 
-            if (editingId) {
-                // MODO EDICIÓN (UPDATE)
-                if (currentTab === 'matricula') {
-                    const [idAlumno, idCurso] = editingId.split('-');
-                    const res = await _supabase
-                        .from('MATRICULA')
-                        .update({ Nota: payload.Nota })
-                        .eq('ID_Alumno', idAlumno)
-                        .eq('ID_Curso', idCurso);
-                    error = res.error;
-                } else {
-                    const pkName = currentTab === 'carrera' ? 'ID_Carrera' :
-                                   currentTab === 'docente' ? 'ID_Docente' :
-                                   currentTab === 'alumno' ? 'ID_Alumno' : 'ID_Curso';
+            const icons = {
+                success: 'check-circle',
+                error: 'alert-circle',
+                warning: 'alert-triangle',
+                info: 'info'
+            };
 
-                    const res = await _supabase
-                        .from(currentTab.toUpperCase())
-                        .update(payload)
-                        .eq(pkName, editingId);
-                    error = res.error;
+            const toast = document.createElement('div');
+            toast.className = `toast-item pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-2xl backdrop-blur-md ${styles[type] || styles.info}`;
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'info'}" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                <p class="flex-1">${esc(message)}</p>
+                <button class="rounded-md p-0.5 opacity-70 transition hover:opacity-100" title="Cerrar">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            const remove = () => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 200);
+            };
+
+            toast.querySelector('button').addEventListener('click', remove);
+            setTimeout(remove, 4200);
+        }
+
+        // ============================================================
+        // EVENTOS
+        // ============================================================
+        function setupEvents() {
+            const mobileButton = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (mobileButton) {
+                mobileButton.addEventListener('click', () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                    overlay.classList.toggle('hidden');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                });
+            }
+
+            document.getElementById('table-search')?.addEventListener('input', applyFilters);
+            document.getElementById('id-filter')?.addEventListener('input', applyFilters);
+            document.getElementById('state-filter')?.addEventListener('change', applyFilters);
+
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape') {
+                    closeModal();
+                    closeSqlModal();
+                    closeConfirm();
                 }
-            } else {
-                // MODO CREACIÓN (INSERT)
-                const res = await _supabase
-                    .from(currentTab.toUpperCase())
-                    .insert([payload]);
-                error = res.error;
-            }
-
-            if (error) {
-                alert('Error en Supabase: ' + error.message);
-            } else {
-                closeModal();
-                await switchTab(currentTab);
-            }
-        }
-
-        // Eliminar registro en Supabase
-        async function deleteRow(id) {
-            if (!confirm('¿Seguro que deseas eliminar este registro?')) return;
-
-            let error = null;
-
-            if (currentTab === 'matricula') {
-                const [idAlumno, idCurso] = id.split('-');
-                const res = await _supabase
-                    .from('MATRICULA')
-                    .delete()
-                    .eq('ID_Alumno', idAlumno)
-                    .eq('ID_Curso', idCurso);
-                error = res.error;
-            } else {
-                const pkName = currentTab === 'carrera' ? 'ID_Carrera' :
-                               currentTab === 'docente' ? 'ID_Docente' :
-                               currentTab === 'alumno' ? 'ID_Alumno' : 'ID_Curso';
-                
-                const res = await _supabase
-                    .from(currentTab.toUpperCase())
-                    .delete()
-                    .eq(pkName, id);
-                error = res.error;
-            }
-
-            if (error) {
-                alert('Error al eliminar en Supabase: ' + error.message);
-            } else {
-                await switchTab(currentTab);
-            }
-        }
-
-        // Filtro de búsqueda local en la tabla cargada
-        function filterCurrentTable() {
-            const query = document.getElementById('table-search').value.toLowerCase();
-            const rows = document.querySelectorAll('#data-table tbody tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setupEvents();
+            switchTab('inicio');
+        });
     </script>
 </body>
+
 </html>
